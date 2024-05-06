@@ -25,7 +25,7 @@ PASSED_MBEDTLS_CFLAGS := -O3 -fPIC -nostdinc -nostdlib -DCKB_DECLARATION_ONLY -I
 BUILDER_DOCKER := nervos/ckb-riscv-gnu-toolchain@sha256:aae8a3f79705f67d505d1f1d5ddc694a4fd537ed1c7e9622420a470d59ba2ec3
 CLANG_FORMAT_DOCKER := kason223/clang-format@sha256:3cce35b0400a7d420ec8504558a02bdfc12fd2d10e40206f140c4545059cd95d
 
-all: build/simple_udt build/always_success build/validate_signature_rsa build/xudt_rce build/rce_validator \
+all: build/simple_udt build/always_success build/validate_signature_rsa build/xudt_rce build/rce_validator build/hard_cap.so \
 	 $(SECP256K1_SRC_20210801) build/secp256k1_data_info.h build/secp256k1_data_info_20210801.h
 
 all-via-docker: ${PROTOCOL_HEADER}
@@ -107,7 +107,7 @@ ${PROTOCOL_SCHEMA}:
 
 ALL_C_SOURCE := $(wildcard c/rce_validator.c /always_success.c c/rce.h c/xudt_rce.c \
 	c/rce_validator.c tests/xudt_rce/*.c tests/xudt_rce/*.h\
-	c/validate_signature_rsa.h c/validate_signature_rsa.c)
+	c/validate_signature_rsa.h c/validate_signature_rsa.c c/extension_plugins/hard_cap.c)
 
 fmt:
 	docker run --rm -v `pwd`:/code ${CLANG_FORMAT_DOCKER} bash -c "cd code && clang-format -i -style=Google $(ALL_C_SOURCE)"
@@ -142,6 +142,10 @@ build/rce_validator: c/rce_validator.c c/rce.h
 	$(OBJCOPY) --only-keep-debug $@ $@.debug
 	$(OBJCOPY) --strip-debug --strip-all $@
 
+build/hard_cap.so: c/extension_plugins/hard_cap.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -o $@ $<
+	$(OBJCOPY) --only-keep-debug $@ $@.debug
+	$(OBJCOPY) --strip-debug --strip-all $@
 
 publish:
 	git diff --exit-code Cargo.toml
