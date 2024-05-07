@@ -65,7 +65,6 @@ static size_t findHardCappedCell(uint8_t *codeHashPtr, size_t source) {
             case CKB_SUCCESS:
                 if (memcmp(codeHashPtr, hash, 32) == 0) {
                     /* Found a match */
-                    printf("found a match, input index of the type ID is: %llu", current);
                     return current;
                 }
                 break;
@@ -94,7 +93,6 @@ __attribute__((visibility("default"))) int validate(int owner_mode, uint32_t i, 
     if (findRet == ERROR_NO_HARDCAP_CELL)
         return findRet;
     ckb_load_cell_data((uint8_t *)&oldHardcap, &len, 0, findRet, CKB_SOURCE_INPUT);
-    printf(">>> oldHardcap is: %d", oldHardcap);
 
     // find the hardcap(a typeId) cell in the outputs
     uint32_t newHardcap = 0;
@@ -102,7 +100,6 @@ __attribute__((visibility("default"))) int validate(int owner_mode, uint32_t i, 
     if (findRet == ERROR_NO_HARDCAP_CELL)
         return findRet;
     ckb_load_cell_data((uint8_t *)&newHardcap, &len, 0, findRet, CKB_SOURCE_OUTPUT);
-    printf(">>> newHardcap is: %d", newHardcap);
 
     // fetch and sum all xudt amount in the outputs
     uint128_t output_amount = sumXudt(CKB_SOURCE_GROUP_OUTPUT);
